@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!usr/bin/python3
 """
 Contains the TestFileStorageDocs classes
 """
@@ -114,6 +114,7 @@ class TestFileStorage(unittest.TestCase):
             js = f.read()
         self.assertEqual(json.loads(string), json.loads(js))
 
+
     def test_get(self):
         """test that get returns an object of a given class by id."""
         storage = models.storage
@@ -151,3 +152,25 @@ class TestFileStorage(unittest.TestCase):
         self.assertGreater(storage.count(), storage.count(State))
         with self.assertRaises(TypeError):
             storage.count(State, 'op')
+
+    @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
+    def test_get_file(self):
+        """Test that get retrieves the correct object based on class and ID"""
+        storage = FileStorage()
+        state = State(name="California")
+        storage.new(state)
+        storage.save()
+        self.assertEqual(storage.get(State, state.id), state)
+        self.assertIsNone(storage.get(State, "non_existent_id"))
+
+    @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
+    def test_count_file(self):
+        """Test that count returns the correct number of objects in storage"""
+        storage = FileStorage()
+        initial_count = storage.count()
+        initial_count_states = storage.count(State)
+        state = State(name="Nevada")
+        storage.new(state)
+        storage.save()
+        self.assertEqual(storage.count(), initial_count + 1)
+        self.assertEqual(storage.count(State), initial_count_states + 1)

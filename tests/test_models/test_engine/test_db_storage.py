@@ -87,6 +87,7 @@ class TestDBStorage(unittest.TestCase):
     def test_save(self):
         """Test that save properly saves objects to file.json"""
 
+
     def test_get(self):
         """test that get returns an object of a given class by id."""
         storage = models.storage
@@ -124,4 +125,25 @@ class TestDBStorage(unittest.TestCase):
         self.assertGreater(storage.count(), storage.count(State))
         with self.assertRaises(TypeError):
             storage.count(State, 'op')
+
+
+    @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
+    def test_get_db(self):
+        """Test that get retrieves the correct object based on class and ID"""
+        state = State(name="California")
+        models.storage.new(state)
+        models.storage.save()
+        self.assertEqual(models.storage.get(State, state.id), state)
+        self.assertIsNone(models.storage.get(State, "non_existent_id"))
+
+    @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
+    def test_count_db(self):
+        """Test that count returns the correct number of objects in storage"""
+        initial_count = models.storage.count()
+        initial_count_states = models.storage.count(State)
+        state = State(name="Nevada")
+        models.storage.new(state)
+        models.storage.save()
+        self.assertEqual(models.storage.count(), initial_count + 1)
+        self.assertEqual(models.storage.count(State), initial_count_states + 1)
 
