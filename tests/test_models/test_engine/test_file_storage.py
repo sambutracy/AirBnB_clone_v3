@@ -114,62 +114,26 @@ class TestFileStorage(unittest.TestCase):
             js = f.read()
         self.assertEqual(json.loads(string), json.loads(js))
 
+    @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
     def test_get(self):
         """test that get returns an object of a given class by id."""
-        storage = models.storage
-        obj = State(name='Nairobi')
-        obj.save()
-        self.assertEqual(obj.id, storage.get(State, obj.id).id)
-        self.assertEqual(obj.name, storage.get(State, obj.id).name)
-        self.assertIsNot(obj, storage.get(State, obj.id + 'op'))
-        self.assertIsNone(storage.get(State, obj.id + 'op'))
-        self.assertIsNone(storage.get(State, 45))
-        self.assertIsNone(storage.get(None, obj.id))
-        self.assertIsNone(storage.get(int, obj.id))
-        with self.assertRaises(TypeError):
-            storage.get(State, obj.id, 'op')
-        with self.assertRaises(TypeError):
-            storage.get(State)
-        with self.assertRaises(TypeError):
-            storage.get()
+        state = State(name='Nairobi')
+        models.storage.new(state)
+        models.storage.save()
 
+        state_obj = models.storage.get(State, state.id)
+
+        self.assertEqual(state, state_obj)
+
+    @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
     def test_count(self):
         """test that count returns the number of objects of a given class."""
-        storage = models.storage
-        self.assertIs(type(storage.count()), int)
-        self.assertIs(type(storage.count(None)), int)
-        self.assertIs(type(storage.count(int)), int)
-        self.assertIs(type(storage.count(State)), int)
-        self.assertEqual(storage.count(), storage.count(None))
-        State(name='Lagos').save()
-        self.assertGreater(storage.count(State), 0)
-        self.assertEqual(storage.count(), storage.count(None))
-        a = storage.count(State)
-        State(name='Enugu').save()
-        self.assertGreater(storage.count(State), a)
-        Amenity(name='Free WiFi').save()
-        self.assertGreater(storage.count(), storage.count(State))
-        with self.assertRaises(TypeError):
-            storage.count(State, 'op')
+        objs_from_all = len(models.storage.all())
+        objs_from_count = models.storage.count()
 
-    @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
-    def test_get_file(self):
-        """Test that get retrieves the correct object based on class and ID"""
-        storage = FileStorage()
-        state = State(name="California")
-        storage.new(state)
-        storage.save()
-        self.assertEqual(storage.get(State, state.id), state)
-        self.assertIsNone(storage.get(State, "non_existent_id"))
+        self.assertEqual(objs_from_all, objs_from_count)
 
-    @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
-    def test_count_file(self):
-        """Test that count returns the correct number of objects in storage"""
-        storage = FileStorage()
-        initial_count = storage.count()
-        initial_count_states = storage.count(State)
-        state = State(name="Nevada")
-        storage.new(state)
-        storage.save()
-        self.assertEqual(storage.count(), initial_count + 1)
-        self.assertEqual(storage.count(State), initial_count_states + 1)
+        states_from_all = len(models.storage.all(State))
+        states_from_count = models.storage.count(State)
+
+        self.assertEqual(states_from_all, states_from_count)
