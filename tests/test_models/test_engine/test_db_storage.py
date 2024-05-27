@@ -68,7 +68,7 @@ test_db_storage.py'])
                             "{:s} method needs a docstring".format(func[0]))
 
 
-class TestFileStorage(unittest.TestCase):
+class TestDBStorage(unittest.TestCase):
     """Test the FileStorage class"""
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_all_returns_dict(self):
@@ -105,3 +105,61 @@ class TestFileStorage(unittest.TestCase):
             models.storage.save()
             self.assertEqual(models.storage.count(), initial_count + 1)
             self.assertEqual(models.storage.count(State), initial_count_states + 1
+
+    def test_get(self):
+        """test that get returns an object of a given class by id."""
+        storage = models.storage
+        obj = State(name='Nairobi')
+        obj.save()
+        self.assertEqual(obj.id, storage.get(State, obj.id).id)
+        self.assertEqual(obj.name, storage.get(State, obj.id).name)
+        self.assertIsNot(obj, storage.get(State, obj.id + 'op'))
+        self.assertIsNone(storage.get(State, obj.id + 'op'))
+        self.assertIsNone(storage.get(State, 45))
+        self.assertIsNone(storage.get(None, obj.id))
+        self.assertIsNone(storage.get(int, obj.id))
+        with self.assertRaises(TypeError):
+            storage.get(State, obj.id, 'op')
+        with self.assertRaises(TypeError):
+            storage.get(State)
+        with self.assertRaises(TypeError):
+            storage.get()
+
+    def test_count(self):
+        """test that count returns the number of objects of a given class."""
+        storage = models.storage
+        self.assertIs(type(storage.count()), int)
+        self.assertIs(type(storage.count(None)), int)
+        self.assertIs(type(storage.count(int)), int)
+        self.assertIs(type(storage.count(State)), int)
+        self.assertEqual(storage.count(), storage.count(None))
+        State(name='Lagos').save()
+        self.assertGreater(storage.count(State), 0)
+        self.assertEqual(storage.count(), storage.count(None))
+        a = storage.count(State)
+        State(name='Enugu').save()
+        self.assertGreater(storage.count(State), a)
+        Amenity(name='Free WiFi').save()
+        self.assertGreater(storage.count(), storage.count(State))
+        with self.assertRaises(TypeError):
+            storage.count(State, 'op')
+
+    @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
+    def test_get_db(self):
+        """Test that get retrieves the correct object based on class and ID"""
+        state = State(name="California")
+        models.storage.new(state)
+        models.storage.save()
+        self.assertEqual(models.storage.get(State, state.id), state)
+        self.assertIsNone(models.storage.get(State, "non_existent_id"))
+
+    @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
+    def test_count_db(self):
+        """Test that count returns the correct number of objects in storage"""
+        initial_count = models.storage.count()
+        initial_count_states = models.storage.count(State)
+        state = State(name="Nevada")
+        models.storage.new(state)
+        models.storage.save()
+        self.assertEqual(models.storage.count(), initial_count + 1)
+        self.assertEqual(models.storage.count(State), initial_count_states + 1)
