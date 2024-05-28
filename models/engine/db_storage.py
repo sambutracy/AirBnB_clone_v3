@@ -88,9 +88,9 @@ class DBStorage:
         """
         Retrieve an object based on class and it's ID
         """
-        if cls and id:
-            key = "{}.{}".format(cls.__name__, id)
-            return self.all(cls).get(key)
+        if cls:
+            obj = self.__session.query(cls).get(id)
+            return obj
         return None
 
     def count(self, cls=None):
@@ -99,5 +99,8 @@ class DBStorage:
         If no class is passed, count all objects.
         """
         if cls:
-            return len(self.all(cls))
-        return len(self.all())
+            all_objs_dict = self.all(cls)
+            count = len(all_objs_dict)
+        else:
+            count = len(self.all())
+        return count

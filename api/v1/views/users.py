@@ -13,6 +13,7 @@ from models.user import User
 def get_users(user_id=None):
     '''Gets the user with the given id or all users.
     '''
+    '''Handles GET requests to fetch user(s).'''
     if user_id:
         user = storage.get(User, user_id)
         if user:
@@ -39,6 +40,7 @@ def get_users(user_id=None):
 def remove_user(user_id):
     '''Removes a user with the given id.
     '''
+    '''Handles DELETE requests to remove a user.'''
     user = storage.get(User, user_id)
     if user:
         storage.delete(user)
@@ -51,6 +53,7 @@ def remove_user(user_id):
 def add_user():
     '''Adds a new user.
     '''
+    '''Handles POST requests to add a new user.'''
     data = {}
     try:
         data = request.get_json()
@@ -58,6 +61,7 @@ def add_user():
         data = None
     if type(data) is not dict:
         raise BadRequest(description='Not a JSON')
+        raise BadRequest(description='Invalid JSON')
     if 'email' not in data:
         raise BadRequest(description='Missing email')
     if 'password' not in data:
@@ -76,6 +80,7 @@ def add_user():
 def update_user(user_id):
     '''Updates the user with the given id.
     '''
+    '''Handles PUT requests to update a user.'''
     xkeys = ('id', 'email', 'created_at', 'updated_at')
     user = storage.get(User, user_id)
     if user:
@@ -86,6 +91,7 @@ def update_user(user_id):
             data = None
         if type(data) is not dict:
             raise BadRequest(description='Not a JSON')
+            raise BadRequest(description='Invalid JSON')
         for key, value in data.items():
             if key not in xkeys:
                 setattr(user, key, value)
