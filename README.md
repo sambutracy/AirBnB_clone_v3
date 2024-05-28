@@ -149,7 +149,24 @@ EOF  all  create  destroy  help  quit  show  update
 ** no instance found **
 (hbnb) quit
 ```
+## api
+created a folder named api at the root of the project. Within this folder, a subfolder named v1 was created. Empty __init__.py files were added to both the api and v1 folders to mark them as Python packages.
 
+Setup Flask App:
+
+A Flask application was set up in api/v1/app.py. This involved creating an instance of the Flask app named app. The app instance was configured with necessary imports, including storage from models, and app_views from api.v1.views. The app_views Blueprint was registered with the Flask app instance, allowing for modular routing. Additionally, a method to handle teardown of the app context was defined, ensuring proper closure of database connections. Configuration for the Flask server was provided to run with host and port specified by environment variables or default values.
+
+Views Setup:
+
+Views were organized in the api/v1/views package. The api/v1/views/__init__.py file contained the initialization of the app_views Blueprint with a URL prefix of /api/v1. This Blueprint was imported in api/v1/views/index.py, where a route /status was defined to return a JSON response indicating the status "OK".
+
+Error Handling:
+
+Error handling was implemented in api/v1/app.py to provide a handler for 404 errors. This handler returns a JSON-formatted 404 status code response with the content "error": "Not found".
+
+State and City API Endpoints:
+
+Endpoints for CRUD operations on State and City objects were defined in api/v1/views/states.py and api/v1/views/cities.py, respectively. These endpoints allow for retrieving all objects, retrieving a single object by ID, deleting an object, creating a new object, and updating an existing object. The endpoints were structured to handle HTTP requests according to RESTful principles.
 ## Bugs
 No known bugs at this time. 
 
